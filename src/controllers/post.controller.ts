@@ -46,7 +46,14 @@ export const updatePost = async (req: Request, res: Response) => {
   const postId = req.params.id;
   const { title, content } = req.body;
 
-  await prisma.post.update({
+  if (!title && !content) {
+    return res.status(422).json({
+      message: 'At least one field is required',
+      code: 'ERR_UNPROCESSABLE_ENTITY',
+    });
+  }
+
+  const post = await prisma.post.update({
     where: { id: Number(postId) },
     data: {
       title,
@@ -54,7 +61,7 @@ export const updatePost = async (req: Request, res: Response) => {
     },
   });
 
-  res.json({ id: postId, title, content });
+  res.json(post);
 };
 
 export const deletePost = async (req: Request, res: Response) => {
