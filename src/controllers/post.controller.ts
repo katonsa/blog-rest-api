@@ -26,8 +26,8 @@ export const getPosts = async (req: Request, res: Response) => {
   });
 };
 
-export const getPost = async (req: Request<PostParams>, res: Response) => {
-  const postId = req.params.id;
+export const getPost = async (req: Request, res: Response) => {
+  const postId = req.params.id as unknown as number;
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
@@ -59,11 +59,21 @@ export const createPost = async (
 };
 
 export const updatePost = async (
-  req: Request<PostParams, {}, UpdatePostBody>,
+  req: Request<any, any, UpdatePostBody>,
   res: Response
 ) => {
-  const postId = req.params.id;
+  const postId = req.params.id as unknown as number;
   const { title, content } = req.body;
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+  });
+
+  if (!post) {
+    return res
+      .status(404)
+      .json({ message: 'Post not found', code: 'ERR_NOT_FOUND' });
+  }
 
   if (!title && !content) {
     return res.status(422).json({
@@ -72,7 +82,7 @@ export const updatePost = async (
     });
   }
 
-  const post = await prisma.post.update({
+  const updatedPost = await prisma.post.update({
     where: { id: postId },
     data: {
       title,
@@ -80,11 +90,11 @@ export const updatePost = async (
     },
   });
 
-  res.json(post);
+  res.json(updatedPost);
 };
 
-export const deletePost = async (req: Request<PostParams>, res: Response) => {
-  const postId = req.params.id;
+export const deletePost = async (req: Request, res: Response) => {
+  const postId = req.params.id as unknown as number;
   await prisma.post.delete({
     where: { id: postId },
   });
