@@ -1,22 +1,36 @@
 import type { Request, Response } from 'express';
 import { prisma } from '../db/prisma';
+import type {
+  CreatePostBody,
+  PostParams,
+  UpdatePostBody,
+} from '../schemas/post.schema';
 
 export const getPosts = async (req: Request, res: Response) => {
-  const posts = await prisma.post.findMany({
-    take: 10,
-    orderBy: { createdAt: 'desc' },
-  });
+  const page = Math.max(1, Number(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+  const skip = (page - 1) * limit;
+
+  const [posts, total] = await Promise.all([
+    prisma.post.findMany({
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.post.count(),
+  ]);
+
   res.json({
     data: posts,
-    meta: {},
+    meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
   });
 };
 
-export const getPost = async (req: Request, res: Response) => {
+export const getPost = async (req: Request<PostParams>, res: Response) => {
   const postId = req.params.id;
 
   const post = await prisma.post.findUnique({
-    where: { id: Number(postId) },
+    where: { id: postId },
   });
 
   if (!post) {
@@ -28,10 +42,12 @@ export const getPost = async (req: Request, res: Response) => {
   res.json(post);
 };
 
-export const createPost = async (req: Request, res: Response) => {
+export const createPost = async (
+  req: Request<{}, {}, CreatePostBody>,
+  res: Response
+) => {
   const { title, content } = req.body;
 
-  // Store the new post in the database
   const post = await prisma.post.create({
     data: {
       title,
@@ -42,7 +58,10 @@ export const createPost = async (req: Request, res: Response) => {
   res.status(201).json(post);
 };
 
-export const updatePost = async (req: Request, res: Response) => {
+export const updatePost = async (
+  req: Request<PostParams, {}, UpdatePostBody>,
+  res: Response
+) => {
   const postId = req.params.id;
   const { title, content } = req.body;
 
@@ -54,7 +73,7 @@ export const updatePost = async (req: Request, res: Response) => {
   }
 
   const post = await prisma.post.update({
-    where: { id: Number(postId) },
+    where: { id: postId },
     data: {
       title,
       content,
@@ -64,10 +83,10 @@ export const updatePost = async (req: Request, res: Response) => {
   res.json(post);
 };
 
-export const deletePost = async (req: Request, res: Response) => {
+export const deletePost = async (req: Request<PostParams>, res: Response) => {
   const postId = req.params.id;
   await prisma.post.delete({
-    where: { id: Number(postId) },
+    where: { id: postId },
   });
   res.status(204).send();
 };
