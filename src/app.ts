@@ -30,7 +30,7 @@ app.use(
   ) => {
     console.error(err);
 
-    // Prisma: Record not found (update/delete on non-existent record)
+    // Record not found
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === 'P2025') {
         return res.status(404).json({
@@ -47,7 +47,7 @@ app.use(
       }
     }
 
-    // Prisma: Validation error (invalid query)
+    // Validation error (invalid query)
     if (err instanceof Prisma.PrismaClientValidationError) {
       return res.status(400).json({
         message: 'Invalid request',
@@ -55,7 +55,15 @@ app.use(
       });
     }
 
-    // Default: 500 Internal Server Error
+    // Invalid JSON
+    if (err instanceof SyntaxError && 'body' in err) {
+      return res.status(400).json({
+        message: 'Invalid JSON',
+        code: 'ERR_INVALID_JSON',
+      });
+    }
+
+    // 500 Internal Server Error
     const response: Record<string, any> = {
       message: 'Internal Server Error',
       code: 'ERR_INTERNAL_ERROR',
