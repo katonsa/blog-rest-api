@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { z, ZodError } from 'zod';
 
+/**
+ * Middleware to validate request data (body, params, query) against a zod schema.
+ */
 export const validate =
   (schema: z.ZodType, source: 'body' | 'params' | 'query' = 'body') =>
   (req: Request, res: Response, next: NextFunction) => {

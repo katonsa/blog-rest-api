@@ -1,6 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { Prisma } from '../lib/generated/prisma/client';
 
+/**
+ * A middleware to handle errors (global erorr handler).
+ */
 export default (
   err: unknown,
   _req: Request,
