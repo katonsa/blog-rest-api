@@ -67,7 +67,7 @@ npm run build
 npm start
 ```
 
-Server runs on `http://localhost:3000` (or `APP_PORT`).
+Server runs on `http://localhost:3000` (or `http://localhost:{APP_PORT}`).
 
 ## Documentation
 
