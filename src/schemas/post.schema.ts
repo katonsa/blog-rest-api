@@ -22,7 +22,13 @@ export const updatePostSchema = z.object({
   content: z.string().min(1).optional(),
 });
 
+export const getAllPostsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+});
+
 // Inferred types for use in controllers
 export type PostParams = z.infer<typeof postParamsSchema>;
 export type CreatePostBody = z.infer<typeof createPostSchema>;
 export type UpdatePostBody = z.infer<typeof updatePostSchema>;
+export type GetAllPostsQuery = z.infer<typeof getAllPostsQuerySchema>;
