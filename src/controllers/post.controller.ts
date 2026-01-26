@@ -1,14 +1,19 @@
-import type { Request, Response } from 'express';
+import type { Request, RequestHandler, Response } from 'express';
 import { prisma } from '../db/prisma';
 import type {
   CreatePostBody,
+  GetAllPostsQuery,
   PostParams,
   UpdatePostBody,
 } from '../schemas/post.schema';
 
-export const getPosts = async (req: Request, res: Response) => {
-  const page = Math.max(1, Number(req.query.page) || 1);
-  const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));
+export const getPosts: RequestHandler = async (req: Request, res: Response) => {
+  const { query } = req.validated as {
+    query: GetAllPostsQuery;
+  };
+
+  const page = Math.max(1, query.page || 1);
+  const limit = Math.min(100, Math.max(1, query.limit || 10));
   const skip = (page - 1) * limit;
 
   const [posts, total] = await Promise.all([
@@ -26,8 +31,8 @@ export const getPosts = async (req: Request, res: Response) => {
   });
 };
 
-export const getPost = async (req: Request, res: Response) => {
-  const postId = req.params.id as unknown as number;
+export const getPost: RequestHandler = async (req: Request, res: Response) => {
+  const postId = (req.validated?.params as PostParams).id;
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
@@ -42,11 +47,15 @@ export const getPost = async (req: Request, res: Response) => {
   res.json(post);
 };
 
-export const createPost = async (
-  req: Request<{}, {}, CreatePostBody>,
+export const createPost: RequestHandler = async (
+  req: Request,
   res: Response
 ) => {
-  const { title, content } = req.body;
+  const { body } = req.validated as {
+    body: CreatePostBody;
+  };
+
+  const { title, content } = body;
 
   const post = await prisma.post.create({
     data: {
@@ -58,12 +67,17 @@ export const createPost = async (
   res.status(201).json(post);
 };
 
-export const updatePost = async (
-  req: Request<any, any, UpdatePostBody>,
+export const updatePost: RequestHandler = async (
+  req: Request,
   res: Response
 ) => {
-  const postId = req.params.id as unknown as number;
-  const { title, content } = req.body;
+  const { params, body } = req.validated as {
+    params: PostParams;
+    body: UpdatePostBody;
+  };
+
+  const postId = params.id;
+  const { title, content } = body;
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
@@ -93,8 +107,16 @@ export const updatePost = async (
   res.json(updatedPost);
 };
 
-export const deletePost = async (req: Request, res: Response) => {
-  const postId = req.params.id as unknown as number;
+export const deletePost: RequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  const { params } = req.validated as {
+    params: PostParams;
+  };
+
+  const postId = params.id;
+
   await prisma.post.delete({
     where: { id: postId },
   });

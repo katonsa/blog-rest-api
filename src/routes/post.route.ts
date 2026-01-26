@@ -9,13 +9,14 @@ import {
 import { validate } from '../middlewares/validate.middleware';
 import {
   createPostSchema,
+  getAllPostsQuerySchema,
   postParamsSchema,
   updatePostSchema,
 } from '../schemas/post.schema';
 
 const router = Router();
 
-router.get('/', getPosts);
+router.get('/', validate(getAllPostsQuerySchema, 'query'), getPosts);
 router.post('/', validate(createPostSchema), createPost);
 router.get('/:id', validate(postParamsSchema, 'params'), getPost);
 router.put(
