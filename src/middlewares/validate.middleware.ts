@@ -12,7 +12,7 @@ export const validate =
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        return res.status(422).json({
+        return res.status(400).json({
           message: 'Validation failed',
           code: 'ERR_VALIDATION',
           errors: error.issues,
