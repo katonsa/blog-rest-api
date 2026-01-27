@@ -21,7 +21,10 @@ export const getPosts = async (req: Request, res: Response) => {
   ]);
 
   res.json({
-    data: posts,
+    data: posts.map(post => ({
+      ...post,
+      characters: post.content.length
+    })),
     meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
   });
 };
@@ -39,7 +42,10 @@ export const getPost = async (req: Request, res: Response) => {
       .json({ message: 'Post not found', code: 'ERR_NOT_FOUND' });
   }
 
-  res.json(post);
+  res.json({
+    ...post,
+    characters: post.content.length
+  });
 };
 
 export const createPost = async (
@@ -48,10 +54,13 @@ export const createPost = async (
 ) => {
   const { title, content } = req.body;
 
+  const permalink = title.toLowerCase().replaceAll(" ", "-");
+
   const post = await prisma.post.create({
     data: {
       title,
       content,
+      permalink
     },
   });
 

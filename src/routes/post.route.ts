@@ -15,7 +15,7 @@ import {
 
 const router = Router();
 
-router.get('/', getPosts);
+router.get('/',  getPosts);
 router.post('/', validate(createPostSchema), createPost);
 router.get('/:id', validate(postParamsSchema, 'params'), getPost);
 router.put(

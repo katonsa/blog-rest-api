@@ -7,7 +7,12 @@ export const postParamsSchema = z.object({
 
 // Schema for creating a post
 export const createPostSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(255),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(50, 'Title exceeded maximum length.')
+    .regex(/^[a-zA-Z ]*$/, 'Title cannot contain integer.')
+    .transform((val) => val.trim()),
   content: z.string().min(1, 'Content is required'),
 });
 

@@ -16,9 +16,22 @@ datasource db {
 model Post {
   id        Int      @id @default(autoincrement())
   title     String   @db.VarChar(255)
-  content   String  @db.Text
+  content   String   @db.Text
+  permalink String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
+  userId Int
+  User   User @relation(fields: [userId], references: [id])
+
   @@map("posts")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(255)
+  email    String @db.VarChar(255) @unique
+  password String @db.VarChar(255)
+
+  posts Post[]
 }
